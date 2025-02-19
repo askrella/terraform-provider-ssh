@@ -8,6 +8,6 @@ import (
 
 var (
 	testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
-		"askrella-ssh": providerserver.NewProtocol6WithError(provider.New("test")()),
+		"ssh": providerserver.NewProtocol6WithError(provider.New("test")()),
 	}
 )

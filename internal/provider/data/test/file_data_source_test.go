@@ -69,6 +69,17 @@ func TestAccFileDataSource(t *testing.T) {
 
 func testAccFileDataSourceConfig(path string) string {
 	return fmt.Sprintf(`
+terraform {
+  required_providers {
+    ssh = {
+      source  = "askrella/ssh"
+      version = "0.1.0"
+    }
+  }
+}
+
+provider "askrella-ssh" {}
+
 data "ssh_file_info" "test" {
   ssh = {
     host        = "localhost"

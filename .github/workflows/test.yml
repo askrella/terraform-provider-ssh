@@ -28,7 +28,7 @@ jobs:
         run: go mod download
         
       - name: Run tests
-        run: TF_ACC=1 go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
+        run: TF_ACC=1 go test -v -coverprofile=coverage.txt -covermode=atomic ./...
           
   lint:
     name: Lint

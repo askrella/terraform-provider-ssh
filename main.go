@@ -20,7 +20,7 @@ func main() {
 	flag.Parse()
 
 	opts := providerserver.ServeOpts{
-		Address: "registry.terraform.io/askrella/askrella-ssh",
+		Address: "registry.terraform.io/askrella/ssh",
 		Debug:   debug,
 	}
 
