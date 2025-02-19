@@ -9,7 +9,7 @@ require (
 	github.com/onsi/gomega v1.36.2
 	github.com/pkg/sftp v1.13.6
 	github.com/sirupsen/logrus v1.9.3
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	go.opentelemetry.io/otel v1.31.0
 	golang.org/x/crypto v0.33.0
 )
