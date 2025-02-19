@@ -14,5 +14,3 @@ services:
       - type: bind
         source: ./mount
         target: /home/testuser
-        consistency: delegated
-
