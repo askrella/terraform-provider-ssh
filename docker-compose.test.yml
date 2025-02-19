@@ -1,0 +1,18 @@
+services:
+  ssh-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "2222:22"
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "22"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+    volumes:
+      - type: bind
+        source: ./mount
+        target: /home/testuser
+        consistency: delegated
+
