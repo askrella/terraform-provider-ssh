@@ -10,5 +10,5 @@ services:
       interval: 5s
       timeout: 3s
       retries: 3
-    volumes:
-      - ./mount:/home/testuser
+#    volumes:
+#      - ./mount:/home/testuser
