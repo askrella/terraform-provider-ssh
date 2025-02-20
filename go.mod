@@ -7,7 +7,7 @@ require (
 	github.com/hashicorp/terraform-plugin-go v0.26.0
 	github.com/hashicorp/terraform-plugin-testing v1.11.0
 	github.com/onsi/gomega v1.36.2
-	github.com/pkg/sftp v1.13.6
+	github.com/pkg/sftp v1.13.7
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.10.0
 	go.opentelemetry.io/otel v1.31.0
