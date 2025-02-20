@@ -83,7 +83,7 @@ func NewSSHClient(ctx context.Context, config SSHConfig) (*SSHClient, error) {
 	}
 
 	host := config.Host
-	isIpv6 := net.ParseIP(config.Host).To16() == nil
+	isIpv6 := net.ParseIP(config.Host).To16() != nil
 	if isIpv6 {
 		host = fmt.Sprintf("[%s]", config.Host)
 	}
