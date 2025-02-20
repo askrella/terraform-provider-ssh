@@ -88,7 +88,7 @@ func NewSSHClient(ctx context.Context, config SSHConfig) (*SSHClient, error) {
 		host = fmt.Sprintf("[%s]", config.Host)
 	}
 
-	host += strconv.Itoa(config.Port)
+	host += ":" + strconv.Itoa(config.Port)
 
 	client, err := ssh.Dial("tcp", host, sshConfig)
 	if err != nil {
