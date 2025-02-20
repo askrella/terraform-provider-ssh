@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/pkg/sftp"
@@ -80,7 +82,15 @@ func NewSSHClient(ctx context.Context, config SSHConfig) (*SSHClient, error) {
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(), // TODO: Allow configuring host key verification
 	}
 
-	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", config.Host, config.Port), sshConfig)
+	host := config.Host
+	isIpv6 := net.ParseIP(config.Host).To16() == nil
+	if isIpv6 {
+		host = fmt.Sprintf("[%s]", config.Host)
+	}
+
+	host += strconv.Itoa(config.Port)
+
+	client, err := ssh.Dial("tcp", host, sshConfig)
 	if err != nil {
 		logger.WithContext(ctx).WithError(err).Error("Failed to connect to SSH server")
 		return nil, fmt.Errorf("failed to connect to SSH server: %w", err)
