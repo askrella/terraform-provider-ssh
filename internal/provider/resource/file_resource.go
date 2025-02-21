@@ -244,6 +244,19 @@ func (r *FileResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	}
 	defer client.Close()
 
+	exists, err := client.Exists(ctx, state.Path.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error determining if file exists",
+			fmt.Sprintf("Could determine file existence: %s", err),
+		)
+		return
+	}
+	if !exists {
+		resp.State.RemoveResource(ctx)
+		return
+	}
+
 	content, err := client.ReadFile(ctx, state.Path.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -347,6 +360,19 @@ func (r *FileResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	}
 	defer client.Close()
 
+	exists, err := client.Exists(ctx, plan.Path.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error determining if file exists",
+			fmt.Sprintf("Could determine file existence: %s", err),
+		)
+		return
+	}
+	if !exists {
+		resp.State.RemoveResource(ctx)
+		return
+	}
+
 	permissions := parsePermissions(plan.Permissions.ValueString())
 
 	err = client.CreateFile(ctx, plan.Path.ValueString(), plan.Content.ValueString(), os.FileMode(permissions))
@@ -421,6 +447,19 @@ func (r *FileResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 		return
 	}
 	defer client.Close()
+
+	exists, err := client.Exists(ctx, state.Path.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error determining if file exists",
+			fmt.Sprintf("Could determine file existence: %s", err),
+		)
+		return
+	}
+	if !exists {
+		resp.State.RemoveResource(ctx)
+		return
+	}
 
 	err = client.DeleteFile(ctx, state.Path.ValueString())
 	if err != nil {

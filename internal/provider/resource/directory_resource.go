@@ -334,6 +334,19 @@ func (r *DirectoryResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 	defer client.Close()
 
+	exists, err := client.Exists(ctx, plan.Path.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error determining if directory exists",
+			fmt.Sprintf("Could determine directory existence: %s", err),
+		)
+		return
+	}
+	if !exists {
+		resp.State.RemoveResource(ctx)
+		return
+	}
+
 	permissions := parsePermissions(plan.Permissions.ValueString())
 
 	if exists, _ := client.Exists(ctx, plan.Path.ValueString()); !exists {
