@@ -3,8 +3,9 @@ package resource
 import (
 	"context"
 	"fmt"
-	"github.com/askrella/askrella-ssh-provider/internal/provider/ssh"
 	"os"
+
+	"github.com/askrella/askrella-ssh-provider/internal/provider/ssh"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -150,7 +151,7 @@ func (r *DirectoryResource) Create(ctx context.Context, req resource.CreateReque
 
 	permissions := parsePermissions(plan.Permissions.ValueString())
 
-	if exists, _ := client.DirectoryExists(ctx, plan.Path.ValueString()); !exists {
+	if exists, _ := client.Exists(ctx, plan.Path.ValueString()); !exists {
 		err = client.CreateDirectory(ctx, plan.Path.ValueString(), os.FileMode(permissions))
 		if err != nil {
 			resp.Diagnostics.AddError(
@@ -226,6 +227,19 @@ func (r *DirectoryResource) Read(ctx context.Context, req resource.ReadRequest, 
 		return
 	}
 	defer client.Close()
+
+	exists, err := client.Exists(ctx, state.Path.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error determining directory existence",
+			fmt.Sprintf("Could not determine directory existence: %s", err),
+		)
+		return
+	}
+	if !exists {
+		resp.State.RemoveResource(ctx)
+		return
+	}
 
 	// Get directory mode
 	mode, err := client.GetFileMode(ctx, state.Path.ValueString())
@@ -322,7 +336,7 @@ func (r *DirectoryResource) Update(ctx context.Context, req resource.UpdateReque
 
 	permissions := parsePermissions(plan.Permissions.ValueString())
 
-	if exists, _ := client.DirectoryExists(ctx, plan.Path.ValueString()); !exists {
+	if exists, _ := client.Exists(ctx, plan.Path.ValueString()); !exists {
 		err = client.CreateDirectory(ctx, plan.Path.ValueString(), os.FileMode(permissions))
 		if err != nil {
 			resp.Diagnostics.AddError(

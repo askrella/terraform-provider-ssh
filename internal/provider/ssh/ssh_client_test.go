@@ -25,7 +25,7 @@ func TestDirectoryOperations(t *testing.T) {
 	directoryPath := path.Join(basePath, "dir/simple")
 
 	t.Log("Check directory does not exist before we've done anything")
-	exists, err := client.DirectoryExists(context.Background(), directoryPath)
+	exists, err := client.Exists(context.Background(), directoryPath)
 	Expect(err).ToNot(HaveOccurred())
 	Expect(exists).To(BeFalse())
 
@@ -34,7 +34,7 @@ func TestDirectoryOperations(t *testing.T) {
 	Expect(err).ToNot(HaveOccurred())
 
 	t.Log("Check directory exists after creation")
-	exists, err = client.DirectoryExists(context.Background(), directoryPath)
+	exists, err = client.Exists(context.Background(), directoryPath)
 	Expect(err).ToNot(HaveOccurred())
 	Expect(exists).To(BeTrue())
 
@@ -47,7 +47,7 @@ func TestDirectoryOperations(t *testing.T) {
 	Expect(err).ToNot(HaveOccurred())
 
 	t.Log("Check directory exists after deletion")
-	exists, err = client.DirectoryExists(context.Background(), directoryPath)
+	exists, err = client.Exists(context.Background(), directoryPath)
 	Expect(err).ToNot(HaveOccurred())
 	Expect(exists).To(BeFalse())
 }

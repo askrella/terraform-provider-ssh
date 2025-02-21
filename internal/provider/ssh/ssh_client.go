@@ -132,7 +132,7 @@ func (c *SSHClient) CreateFile(ctx context.Context, path string, content string,
 
 	// Ensure parent directory exists
 	parentDir := filepath.Dir(path)
-	if exists, _ := c.DirectoryExists(ctx, parentDir); !exists {
+	if exists, _ := c.Exists(ctx, parentDir); !exists {
 		if err := c.CreateDirectory(ctx, parentDir, 0755); err != nil {
 			return fmt.Errorf("failed to create parent directory: %w", err)
 		}
@@ -197,7 +197,7 @@ func (c *SSHClient) CreateDirectory(ctx context.Context, path string, permission
 	ctx, span := otel.Tracer("ssh-provider").Start(ctx, "CreateDirectory")
 	defer span.End()
 
-	if exists, _ := c.DirectoryExists(ctx, path); exists {
+	if exists, _ := c.Exists(ctx, path); exists {
 		return fmt.Errorf("directory %s already exists", path)
 	}
 
@@ -227,21 +227,21 @@ func (c *SSHClient) DeleteDirectory(ctx context.Context, path string) error {
 	return nil
 }
 
-// DirectoryExists checks if a directory exists and is a directory
-func (c *SSHClient) DirectoryExists(ctx context.Context, path string) (bool, error) {
-	ctx, span := otel.Tracer("ssh-provider").Start(ctx, "DirectoryExists")
+// Exists checks if a directory or file exists
+func (c *SSHClient) Exists(ctx context.Context, path string) (bool, error) {
+	ctx, span := otel.Tracer("ssh-provider").Start(ctx, "Exists")
 	defer span.End()
 
-	info, err := c.SftpClient.Stat(path)
+	_, err := c.SftpClient.Stat(path)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return false, nil
 		}
-		c.logger.WithContext(ctx).WithError(err).Error("Failed to check directory existence")
-		return false, fmt.Errorf("failed to check directory existence: %w", err)
+		c.logger.WithContext(ctx).WithError(err).Error("Failed to check existence")
+		return false, fmt.Errorf("failed to check existence: %w", err)
 	}
 
-	return info.IsDir(), nil
+	return true, nil
 }
 
 // GetFileMode gets the permissions of a file or directory

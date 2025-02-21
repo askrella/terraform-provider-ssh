@@ -48,7 +48,7 @@ func TestAccDirectoryResource(t *testing.T) {
 					resource.TestCheckResourceAttr("ssh_directory.test", "ssh.username", "testuser"),
 					func(s *terraform.State) error {
 						// Verify directory exists
-						exists, err := client.DirectoryExists(context.Background(), testDirPath)
+						exists, err := client.Exists(context.Background(), testDirPath)
 						if err != nil {
 							return fmt.Errorf("failed to check directory: %v", err)
 						}
@@ -94,7 +94,7 @@ func TestAccDirectoryResource(t *testing.T) {
 					resource.TestCheckResourceAttr("ssh_directory.test", "ssh.username", "testuser"),
 					func(s *terraform.State) error {
 						// Verify directory exists
-						exists, err := client.DirectoryExists(context.Background(), testDirPath)
+						exists, err := client.Exists(context.Background(), testDirPath)
 						if err != nil {
 							return fmt.Errorf("failed to check directory: %v", err)
 						}

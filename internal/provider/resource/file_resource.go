@@ -154,6 +154,19 @@ func (r *FileResource) Create(ctx context.Context, req resource.CreateRequest, r
 	}
 	defer client.Close()
 
+	exists, err := client.Exists(ctx, plan.Path.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error checking file existence",
+			fmt.Sprintf("Could not determine file existence: %s", err),
+		)
+		return
+	}
+	if exists {
+		resp.State.RemoveResource(ctx)
+		return
+	}
+
 	permissions := parsePermissions(plan.Permissions.ValueString())
 
 	err = client.CreateFile(ctx, plan.Path.ValueString(), plan.Content.ValueString(), os.FileMode(permissions))
