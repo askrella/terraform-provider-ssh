@@ -15,14 +15,6 @@ import (
 func TestAccFileResource(t *testing.T) {
 	t.Parallel()
 
-	// Setup SSH client for verification
-	sshConfig := ssh.SSHConfig{
-		Host:     "localhost",
-		Port:     2222,
-		Username: "testuser",
-		Password: "testpass",
-	}
-
 	client, err := ssh.NewSSHClient(context.Background(), sshConfig)
 	require.NoError(t, err)
 	defer client.Close()

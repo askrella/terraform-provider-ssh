@@ -149,7 +149,7 @@ func (r *DirectoryResource) Create(ctx context.Context, req resource.CreateReque
 	}
 	defer client.Close()
 
-	permissions := parsePermissions(plan.Permissions.ValueString())
+	permissions := ssh.ParsePermissions(plan.Permissions.ValueString())
 
 	if exists, _ := client.Exists(ctx, plan.Path.ValueString()); !exists {
 		err = client.CreateDirectory(ctx, plan.Path.ValueString(), os.FileMode(permissions))
@@ -334,27 +334,33 @@ func (r *DirectoryResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 	defer client.Close()
 
-	exists, err := client.Exists(ctx, plan.Path.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error determining if directory exists",
-			fmt.Sprintf("Could determine directory existence: %s", err),
-		)
-		return
-	}
-	if !exists {
-		resp.State.RemoveResource(ctx)
-		return
-	}
-
-	permissions := parsePermissions(plan.Permissions.ValueString())
+	permissions := ssh.ParsePermissions(plan.Permissions.ValueString())
+	wantedFileMode := os.FileMode(permissions)
 
 	if exists, _ := client.Exists(ctx, plan.Path.ValueString()); !exists {
-		err = client.CreateDirectory(ctx, plan.Path.ValueString(), os.FileMode(permissions))
+		err = client.CreateDirectory(ctx, plan.Path.ValueString(), wantedFileMode)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error updating directory",
 				fmt.Sprintf("Could not update directory: %s", err),
+			)
+			return
+		}
+	}
+
+	fileMode, err := client.GetFileMode(ctx, plan.Path.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error retrieving permissions",
+			fmt.Sprintf("Could not retrieve permissions: %s", err),
+		)
+	}
+	if fileMode != wantedFileMode {
+		err := client.SetFileMode(ctx, plan.Path.ValueString(), wantedFileMode)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error updating permissions",
+				fmt.Sprintf("Could not set permissions: %s", err),
 			)
 			return
 		}

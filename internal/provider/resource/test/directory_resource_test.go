@@ -17,14 +17,6 @@ import (
 func TestAccDirectoryResource(t *testing.T) {
 	t.Parallel()
 
-	// Setup SSH client for verification
-	sshConfig := ssh.SSHConfig{
-		Host:     "localhost",
-		Port:     2222,
-		Username: "testuser",
-		Password: "testpass",
-	}
-
 	client, err := ssh.NewSSHClient(context.Background(), sshConfig)
 	require.NoError(t, err)
 	defer client.Close()
@@ -62,7 +54,7 @@ func TestAccDirectoryResource(t *testing.T) {
 							return fmt.Errorf("failed to get directory permissions: %v", err)
 						}
 						if mode != os.FileMode(0755) {
-							return fmt.Errorf("unexpected permissions for creation: got %o, want 0755", mode)
+							return fmt.Errorf("unexpected permissions for creation: got octal %o, want 0755", mode)
 						}
 
 						// Verify ownership
@@ -83,10 +75,10 @@ func TestAccDirectoryResource(t *testing.T) {
 			},
 			// Update testing
 			{
-				Config: testAccDirectoryResourceConfig(dirName, "0775", "testuser", "testuser"),
+				Config: testAccDirectoryResourceConfig(dirName, "0600", "testuser", "testuser"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ssh_directory.test", "path", testDirPath),
-					resource.TestCheckResourceAttr("ssh_directory.test", "permissions", "0775"),
+					resource.TestCheckResourceAttr("ssh_directory.test", "permissions", "0600"),
 					resource.TestCheckResourceAttr("ssh_directory.test", "owner", "testuser"),
 					resource.TestCheckResourceAttr("ssh_directory.test", "group", "testuser"),
 					resource.TestCheckResourceAttr("ssh_directory.test", "ssh.host", "localhost"),
@@ -107,8 +99,8 @@ func TestAccDirectoryResource(t *testing.T) {
 						if err != nil {
 							return fmt.Errorf("failed to get directory permissions: %v", err)
 						}
-						if mode != os.FileMode(0775) {
-							return fmt.Errorf("unexpected permissions for updating: got %o, want 0775", mode)
+						if mode != os.FileMode(0600) {
+							return fmt.Errorf("unexpected permissions for updating: got %o, want 0600", mode)
 						}
 
 						// Verify ownership

@@ -258,6 +258,20 @@ func (c *SSHClient) GetFileMode(ctx context.Context, path string) (os.FileMode, 
 	return info.Mode().Perm(), nil
 }
 
+// GetFileMode gets the permissions of a file or directory
+func (c *SSHClient) SetFileMode(ctx context.Context, path string, mode os.FileMode) error {
+	ctx, span := otel.Tracer("ssh-provider").Start(ctx, "SetFileMode")
+	defer span.End()
+
+	err := c.SftpClient.Chmod(path, mode)
+	if err != nil {
+		c.logger.WithContext(ctx).WithError(err).Error("Failed to set file mode")
+		return fmt.Errorf("failed to set file mode: %w", err)
+	}
+
+	return nil
+}
+
 // GetFileOwnership gets the user and group ownership of a file or directory
 func (c *SSHClient) GetFileOwnership(ctx context.Context, path string) (*FileOwnership, error) {
 	ctx, span := otel.Tracer("ssh-provider").Start(ctx, "GetFileOwnership")

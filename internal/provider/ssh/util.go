@@ -1,8 +1,8 @@
-package resource
+package ssh
 
 import "strconv"
 
-func parsePermissions(perms string) uint32 {
+func ParsePermissions(perms string) uint32 {
 	if perms == "" {
 		return 0644
 	}

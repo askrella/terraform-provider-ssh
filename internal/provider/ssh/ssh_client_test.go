@@ -3,21 +3,68 @@ package ssh
 import (
 	"context"
 	"crypto/rand"
-	. "github.com/onsi/gomega"
 	"os"
 	"path"
 	"testing"
+
+	. "github.com/onsi/gomega"
 )
+
+var sshConfig = SSHConfig{
+	Host:     "localhost",
+	Port:     2222,
+	Username: "testuser",
+	Password: "testpass",
+}
+
+func TestFilePermissions(t *testing.T) {
+	RegisterTestingT(t)
+
+	client, err := NewSSHClient(context.Background(), sshConfig)
+	Expect(err).ToNot(HaveOccurred())
+	ctx := context.Background()
+	basePath := "/home/testuser/ssh_test_" + rand.Text()
+
+	testCases := []struct {
+		name        string
+		filePath    string
+		content     string
+		permissions os.FileMode
+	}{
+		{
+			name:        "Test File Permissions 0777",
+			filePath:    basePath + "_1",
+			content:     "Hello World",
+			permissions: 0777,
+		},
+		{
+			name:        "Test File Permissions 0644",
+			filePath:    basePath + "_2",
+			content:     "Hello World",
+			permissions: 0644,
+		},
+		{
+			name:        "Test File Permissions 0600",
+			filePath:    basePath + "_3",
+			content:     "Hello World",
+			permissions: 0600,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			RegisterTestingT(t)
+
+			Expect(client.CreateFile(ctx, tc.filePath, tc.content, tc.permissions)).Should(Succeed())
+			Expect(client.GetFileMode(ctx, tc.filePath)).To(BeEquivalentTo(tc.permissions))
+		})
+	}
+}
 
 func TestDirectoryOperations(t *testing.T) {
 	RegisterTestingT(t)
 
-	client, err := NewSSHClient(context.Background(), SSHConfig{
-		Host:     "localhost",
-		Port:     2222,
-		Username: "testuser",
-		Password: "testpass",
-	})
+	client, err := NewSSHClient(context.Background(), sshConfig)
 	Expect(err).ToNot(HaveOccurred())
 
 	basePath := "/home/testuser/ssh_test_" + rand.Text()

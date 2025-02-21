@@ -163,19 +163,40 @@ func (r *FileResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 	if exists {
-		resp.State.RemoveResource(ctx)
-		return
+		content, err := client.ReadFile(ctx, plan.Path.ValueString())
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error checking file content",
+				fmt.Sprintf("Could not read file content: %s", err),
+			)
+			return
+		}
+
+		// When content does not match the desired state, delete the file and pretend it doesn't exist (anymore)
+		if content != plan.Content.ValueString() {
+			err := client.DeleteFile(ctx, plan.Path.ValueString())
+			if err != nil {
+				resp.Diagnostics.AddError(
+					"Error recreating file",
+					fmt.Sprintf("Could delete file after content mismatch: %s", err),
+				)
+				return
+			}
+			exists = false
+		}
 	}
 
-	permissions := parsePermissions(plan.Permissions.ValueString())
+	permissions := ssh.ParsePermissions(plan.Permissions.ValueString())
 
-	err = client.CreateFile(ctx, plan.Path.ValueString(), plan.Content.ValueString(), os.FileMode(permissions))
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error creating file",
-			fmt.Sprintf("Could not create file: %s", err),
-		)
-		return
+	if !exists {
+		err = client.CreateFile(ctx, plan.Path.ValueString(), plan.Content.ValueString(), os.FileMode(permissions))
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error creating file",
+				fmt.Sprintf("Could not create file: %s", err),
+			)
+			return
+		}
 	}
 
 	// Set ownership if specified
@@ -368,12 +389,16 @@ func (r *FileResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		)
 		return
 	}
-	if !exists {
-		resp.State.RemoveResource(ctx)
-		return
+	if exists {
+		if err := client.DeleteFile(ctx, plan.Path.ValueString()); err != nil {
+			resp.Diagnostics.AddError(
+				"Error updating file",
+				fmt.Sprintf("Could not recreate file: %s", err),
+			)
+		}
 	}
 
-	permissions := parsePermissions(plan.Permissions.ValueString())
+	permissions := ssh.ParsePermissions(plan.Permissions.ValueString())
 
 	err = client.CreateFile(ctx, plan.Path.ValueString(), plan.Content.ValueString(), os.FileMode(permissions))
 	if err != nil {
