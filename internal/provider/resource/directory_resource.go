@@ -150,13 +150,15 @@ func (r *DirectoryResource) Create(ctx context.Context, req resource.CreateReque
 
 	permissions := parsePermissions(plan.Permissions.ValueString())
 
-	err = client.CreateDirectory(ctx, plan.Path.ValueString(), os.FileMode(permissions))
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error creating directory",
-			fmt.Sprintf("Could not create directory: %s", err),
-		)
-		return
+	if exists, _ := client.DirectoryExists(ctx, plan.Path.ValueString()); !exists {
+		err = client.CreateDirectory(ctx, plan.Path.ValueString(), os.FileMode(permissions))
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error creating directory",
+				fmt.Sprintf("Could not create directory: %s", err),
+			)
+			return
+		}
 	}
 
 	// Set ownership if specified
