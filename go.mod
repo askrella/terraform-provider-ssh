@@ -3,7 +3,7 @@ module github.com/askrella/askrella-ssh-provider
 go 1.24.0
 
 require (
-	github.com/hashicorp/terraform-plugin-framework v1.14.0
+	github.com/hashicorp/terraform-plugin-framework v1.14.1
 	github.com/hashicorp/terraform-plugin-go v0.26.0
 	github.com/hashicorp/terraform-plugin-testing v1.11.0
 	github.com/onsi/gomega v1.36.2
